@@ -1,0 +1,116 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:./data/plansdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    defer-datasource-initialization: false
+    open-in-view: false
+
+  # Add SQL initialization config
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: [ ] # classpath:data.sql # uncomment for dev testing and data initialization
+      continue-on-error: false
+
+  output:
+    ansi:
+      enabled: detect
+
+# Circuit Breaker and Retry Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      providerApi:
+        slidingWindowSize: 10
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowType: COUNT_BASED
+        minimumNumberOfCalls: 5
+        waitDurationInOpenState: 30s
+        failureRateThreshold: 60
+        eventConsumerBufferSize: 10
+        registerHealthIndicator: true
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        slow-call-duration-threshold: 3s
+        slow-call-rate-threshold: 50
+
+  retry:
+    instances:
+      providerApi:
+        maxAttempts: 3
+        waitDuration: 1000ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        enableRandomizedWait: false
+        retryExceptions:
+          - java.net.ConnectException
+          - java.net.SocketTimeoutException
+          - java.net.UnknownHostException
+          - org.springframework.web.client.ResourceAccessException
+          - com.jmb.events_api.sync.infrastructure.external.exception.ProviderApiException
+
+  timelimiter:
+    instances:
+      providerApi:
+        timeoutDuration: 8s
+        cancelRunningFuture: true
+
+# Provider Configuration
+fever:
+  provider:
+    url: https://provider.code-challenge.feverup.com/api/events # Provider API URL
+    timeout: 5s
+    retry-attempts: 3
+    retry-delay: 500ms
+  sync:
+    interval: 5000                 # How often to run plan sync
+    batch-size: 100                 # Plans per batch
+    max-retries: 3                  # Max retry attempts
+    enabled: true                  # Enable/disable scheduling
+
+# Clean logging
+logging:
+  level:
+    com.jmb.events_api: INFO
+    org.hibernate.SQL: WARN
+    org.springframework.web: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Actuator endpoints for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,circuitbreakers,retries
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+
+# OpenAPI/Swagger configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+  info:
+    title: "Fever Events API"
+    description: "Events search API compliant with Fever specification (powered by provider plans)"
+    version: "1.0.0"
