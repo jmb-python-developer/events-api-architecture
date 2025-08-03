@@ -43,7 +43,7 @@ poetry run uvicorn src.provider_api.main:app --host 0.0.0.0 --port 8081
 Docker:
 ```bash
 docker build -t provider-api .
-docker run -d -p 8081:8081 --name provider-api-test provider-api
+docker run -d -p 8081:8081 --name provider-api provider-api
 ```
 
 ## Docker Operations
@@ -55,16 +55,16 @@ Build and run the containerized service:
 docker build -t provider-api .
 
 # Run the container in detached mode
-docker run -d -p 8081:8081 --name provider-api-test provider-api
+docker run -d -p 8081:8081 --name provider-api provider-api
 
 # Check container status
 docker ps
 
 # View container logs
-docker logs provider-api-test
+docker logs provider-api
 
 # Stop and remove container
-docker stop provider-api-test && docker rm provider-api-test
+docker stop provider-api && docker rm provider-api
 ```
 
 Health check commands:
