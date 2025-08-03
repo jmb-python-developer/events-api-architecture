@@ -1,0 +1,54 @@
+[tool.poetry]
+name = "provider-api"
+version = "0.1.0"
+description = "Mock provider service for Fever Events API"
+authors = ["Your Name <jmb-python-developer@proton.me>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "provider_api", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.104.1"
+uvicorn = {extras = ["standard"], version = "^0.24.0"}
+pydantic = "^2.5.0"
+pydantic-settings = "^2.1.0"
+lxml = "^4.9.3"
+httpx = "^0.25.2"
+structlog = "^23.2.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+pytest-asyncio = "^0.21.1"
+pytest-httpx = "^0.26.0"
+black = "^23.11.0"
+isort = "^5.12.0"
+mypy = "^1.7.0"
+pre-commit = "^3.5.0"
+
+[tool.poetry.group.prod.dependencies]
+gunicorn = "^21.2.0"
+
+[tool.poetry.scripts]
+dev = "uvicorn src.provider_api.main:app --reload --port 8081 --host 0.0.0.0"
+start = "uvicorn src.provider_api.main:app --host 0.0.0.0 --port 8081"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+# Code quality configuration
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
